@@ -1,0 +1,38 @@
+Table: Employees
+
++-------------+----------+
+| Column Name | Type     |
++-------------+----------+
+| employee_id | int      |
+| name        | varchar  |
+| reports_to  | int      |
+| age         | int      |
++-------------+----------+
+employee_id is the primary key for this table.
+This table contains information about the employees and the id of the manager they report to. Some employees do not report to anyone (reports_to is null). 
+ 
+
+For this problem, we will consider a manager an employee who has at least 1 other employee reporting to them.
+
+Write an SQL query to report the ids and the names of all managers, the number of employees who report directly to them, and the average age of the reports rounded to the nearest integer.
+
+Return the result table ordered by employee_id.
+
+==================================================================================================================
+
+# SELECT 
+#     manager.name,
+#     manager.reports_to AS employee_id, 
+#     COUNT(manager.employee_id) AS reports_count, 
+#     ROUND(AVG(manager.age)) AS average_age
+# FROM Employees manager
+# JOIN Employees emp
+#     USING (employee_id)
+# WHERE manager.reports_to IS NOT NULL
+# GROUP BY manager.reports_to
+
+select mgr.employee_id, mgr.name, COUNT(emp.employee_id) as reports_count, ROUND(AVG(emp.age)) as average_age
+from employees emp join employees mgr
+on emp.reports_to = mgr.employee_id
+group by employee_id
+order by employee_id
