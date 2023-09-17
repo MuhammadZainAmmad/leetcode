@@ -28,3 +28,23 @@ SELECT employee_id, department_id
 FROM Employee 
 GROUP BY employee_id 
 HAVING COUNT(employee_id) = 1
+
+# From solution tab 
+# SELECT  employee_id, department_id
+# FROM
+#     (SELECT *,
+#         COUNT(employee_id) OVER(PARTITION BY employee_id) AS EmployeeCount
+#     FROM Employee) EmployeePartition
+# WHERE EmployeeCount = 1 OR primary_flag = 'Y'
+
+# Solution tab answer with CTE (myself)
+WITH 
+    EmployeeWithCount 
+    AS (
+        SELECT *,
+        COUNT(employee_id) OVER(PARTITION BY employee_id) AS EmployeeCount
+        FROM Employee
+    )
+SELECT  employee_id, department_id
+FROM EmployeeWithCount
+WHERE EmployeeCount = 1 OR primary_flag = 'Y'
