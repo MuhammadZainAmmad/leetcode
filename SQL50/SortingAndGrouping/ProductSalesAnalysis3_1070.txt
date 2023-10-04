@@ -1,0 +1,98 @@
+Table: Sales
+
++-------------+-------+
+| Column Name | Type  |
++-------------+-------+
+| sale_id     | int   |
+| product_id  | int   |
+| year        | int   |
+| quantity    | int   |
+| price       | int   |
++-------------+-------+
+(sale_id, year) is the primary key (combination of columns with unique values) of this table.
+product_id is a foreign key (reference column) to Product table.
+Each row of this table shows a sale on the product product_id in a certain year.
+Note that the price is per unit.
+ 
+
+Table: Product
+
++--------------+---------+
+| Column Name  | Type    |
++--------------+---------+
+| product_id   | int     |
+| product_name | varchar |
++--------------+---------+
+product_id is the primary key (column with unique values) of this table.
+Each row of this table indicates the product name of each product.
+ 
+
+Write a solution to select the product id, year, quantity, and price for the first year of every product sold.
+
+========================================================================================================================================================
+
+# Approach_1: only 1 test case passed b/c having is not working
+# SELECT
+#   # product_id, MIN(year)
+#   product_id, MIN(year) AS first_year, quantity, price
+# FROM Sales 
+# GROUP BY product_id
+# HAVING MIN(year)
+
+# Approach_2 (GPT help): Using JOIN
+# SELECT
+#   s1.product_id, s2.first_year, s1.quantity, s1.price
+# FROM Sales s1
+# JOIN 
+#   (SELECT
+#     product_id, MIN(year) AS first_year
+#   FROM Sales 
+#   GROUP BY product_id) as s2
+# ON s1.product_id = s2.product_id 
+#   AND s1.year = s2.first_year
+
+# Approach 3: Using subquery
+# SELECT
+#   product_id, year AS first_year, quantity, price
+# FROM Sales
+# WHERE (product_id, year) IN
+#   (SELECT
+#     product_id, MIN(year)
+#   FROM Sales 
+#   GROUP BY product_id)
+
+# Approach_4: Using CTE with JOIN
+# WITH first_year AS (
+#   SELECT
+#     product_id, MIN(year) AS first_year
+#   FROM Sales 
+#   GROUP BY product_id
+# )
+# SELECT 
+#   s.product_id, cte.first_year, s.quantity, s.price
+# FROM Sales s
+# JOIN first_year cte
+# ON s.product_id = cte.product_id 
+#   AND s.year = cte.first_year  
+
+# Approach_5: rank() with subquery
+# ROW_NUMBER() is wrong b/c we should include all such records as long as the sales happened in the first year. For example, in year 2018, there are two sales for product_id 2 with different price/quantity, then both should be included. ROW_NUMBER() would rank one sale as 1, the other as 2, leading to one of them not included in the final results. Hope this helps.
+SELECT product_id, first_year, quantity, price
+FROM (
+  SELECT
+    product_id, year AS first_year, quantity, price,
+    rank() OVER (PARTITION BY product_id ORDER BY year) AS row_num
+  FROM Sales 
+) AS sales_rownum
+WHERE row_num = 1; 
+
+# Approach_6: rank() with CTE
+# WITH sales_rownum AS(
+#   SELECT
+#     product_id, year AS first_year, quantity, price,
+#     rank() OVER (PARTITION BY product_id ORDER BY year) AS row_num
+#   FROM Sales 
+# )
+# SELECT product_id, first_year, quantity, price
+# FROM sales_rownum
+# WHERE row_num = 1;
