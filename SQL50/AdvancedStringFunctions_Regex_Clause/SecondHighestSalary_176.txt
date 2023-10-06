@@ -1,0 +1,50 @@
+Table: Employee
+
++-------------+------+
+| Column Name | Type |
++-------------+------+
+| id          | int  |
+| salary      | int  |
++-------------+------+
+id is the primary key (column with unique values) for this table.
+Each row of this table contains information about the salary of an employee.
+ 
+
+Write a solution to find the second highest salary from the Employee table. If there is no second highest salary, return null 
+
+=================================================================================================================================================
+
+# MyApproach: dk why not working even outputs are same
+# SELECT 
+#     CASE
+#         WHEN COUNT( id ) = 1 THEN 'null'
+#         ELSE (
+#             SELECT
+#                 salary
+#             FROM Employee
+#             ORDER BY salary DESC
+#             LIMIT 1, 1  
+#         )       
+#     END AS SecondHighestSalary
+# FROM Employee;
+
+# Solutions from solution tab
+# SELECT 
+#     MAX(Salary) AS SecondHighestSalary 
+# FROM Employee 
+# WHERE Salary < (
+#         SELECT MAX(Salary) FROM Employee
+# );
+
+# SELECT IFNULL(
+#     Null, 
+#     (SELECT DISTINCT Salary 
+#     FROM Employee 
+#     ORDER BY Salary DESC 
+#     LIMIT 1 OFFSET 1)
+#  )
+# AS SecondHighestSalary
+
+SELECT MAX(e2.Salary) AS SecondHighestSalary
+FROM Employee e1, Employee e2
+WHERE e1.Salary > e2.Salary
