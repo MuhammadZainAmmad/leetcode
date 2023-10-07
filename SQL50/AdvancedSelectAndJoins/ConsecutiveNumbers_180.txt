@@ -1,0 +1,43 @@
+Table: Logs
+
++-------------+---------+
+| Column Name | Type    |
++-------------+---------+
+| id          | int     |
+| num         | varchar |
++-------------+---------+
+In SQL, id is the primary key for this table.
+id is an autoincrement column.
+ 
+
+Find all numbers that appear at least three times consecutively.
+
+==================================================================================================================================
+
+# MyApproach: Not working
+# SELECT 
+#     CASE 
+#         WHEN COUNT(num) = 2 THEN num
+#     END
+# FROM (
+#     SELECT l1.num as num
+#     FROM Logs l1
+#     JOIN Logs l2
+#     ON l1.id + 1 = l2.id  
+#         AND l1.num - l2.num = 0
+# ) joined_logs
+# GROUP BY num
+
+# FROM editorial
+SELECT DISTINCT
+    l1.Num AS ConsecutiveNums
+FROM
+    Logs l1,
+    Logs l2,
+    Logs l3
+WHERE
+    l1.Id = l2.Id - 1
+    AND l2.Id = l3.Id - 1
+    AND l1.Num = l2.Num
+    AND l2.Num = l3.Num
+;
