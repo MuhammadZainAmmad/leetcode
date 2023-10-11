@@ -1,0 +1,137 @@
+Table: Products
+
++---------------+---------+
+| Column Name   | Type    |
++---------------+---------+
+| product_id    | int     |
+| new_price     | int     |
+| change_date   | date    |
++---------------+---------+
+(product_id, change_date) is the primary key (combination of columns with unique values) of this table.
+Each row of this table indicates that the price of some product was changed to a new price at some date.
+ 
+
+Write a solution to find the prices of all products on 2019-08-16. Assume the price of all products before any change is 10
+
+=======================================================================================================================================
+
+# MyApproach1: 3 out of 15 testcases passed
+# SELECT p1.product_id, COALESCE(MAX(p2.new_price), 10) AS price
+# FROM Products p1
+# LEFT JOIN(
+#     SELECT * 
+#     FROM
+#     Products
+#     WHERE change_date <= '2019-08-16'
+# ) p2
+# ON p1.product_id = p2.product_id
+#     AND p1.change_date <= p2.change_date
+# GROUP BY product_id
+
+# MyApproach2: 5 out of 15 testcases passed
+# SELECT 
+#     p1.product_id, COALESCE(MAX(p2.new_price), MAX(p3.new_price), 10) AS price
+# FROM Products p1
+# LEFT JOIN (
+#         SELECT * 
+#     FROM
+#     Products
+#     WHERE change_date = '2019-08-16'
+# ) p2
+# ON p1.product_id = p2.product_id
+#     AND p1.change_date = p2.change_date
+# LEFT JOIN (
+#         SELECT * 
+#     FROM
+#     Products
+#     WHERE change_date < '2019-08-16'
+# ) p3
+# ON p1.product_id = p3.product_id
+# GROUP BY p1.product_id
+
+# Editorial 01: Divide cases by using UNION ALL
+# SELECT
+#   product_id,
+#   10 AS price
+# FROM
+#   Products
+# GROUP BY
+#   product_id
+# HAVING
+#   MIN(change_date) > '2019-08-16'
+# UNION ALL
+# SELECT
+#   product_id,
+#   new_price AS price
+# FROM
+#   Products
+# WHERE
+#   (product_id, change_date) IN (
+#     SELECT
+#       product_id,
+#       MAX(change_date)
+#     FROM
+#       Products
+#     WHERE
+#       change_date <= '2019-08-16'
+#     GROUP BY
+#       product_id
+#   )
+
+# Editorial 2: Divide cases by using LEFT JOIN
+# SELECT
+#   UniqueProductIds.product_id,
+#   IFNULL (LastChangedPrice.new_price, 10) AS price
+# FROM
+#   (
+#     SELECT DISTINCT
+#       product_id
+#     FROM
+#       Products
+#   ) AS UniqueProductIds
+#   LEFT JOIN (
+#     SELECT
+#       Products.product_id,
+#       new_price
+#     FROM
+#       Products
+#       JOIN (
+#         SELECT
+#           product_id,
+#           MAX(change_date) AS change_date
+#         FROM
+#           Products
+#         WHERE
+#           change_date <= "2019-08-16"
+#         GROUP BY
+#           product_id
+#       ) AS LastChangedDate USING (product_id, change_date)
+#     GROUP BY
+#       product_id
+#   ) AS LastChangedPrice USING (product_id)
+
+# Editorial 3: Use the window function
+# SELECT
+#   product_id,
+#   IFNULL (price, 10) AS price
+# FROM
+#   (
+#     SELECT DISTINCT
+#       product_id
+#     FROM
+#       Products
+#   ) AS UniqueProducts
+#   LEFT JOIN (
+#     SELECT DISTINCT
+#       product_id,
+#       FIRST_VALUE (new_price) OVER (
+#         PARTITION BY
+#           product_id
+#         ORDER BY
+#           change_date DESC
+#       ) AS price
+#     FROM
+#       Products
+#     WHERE
+#       change_date <= '2019-08-16'
+#   ) AS LastChangedPrice USING (product_id);
