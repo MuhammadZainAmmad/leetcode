@@ -41,3 +41,39 @@ WHERE
     AND l1.Num = l2.Num
     AND l2.Num = l3.Num
 ;
+
+# Solution 1
+# SELECT DISTINCT Num AS ConsecutiveNums
+# FROM Logs
+# WHERE 
+#     (Id + 1, Num) IN (
+#         SELECT * 
+#         FROM Logs
+#         ) AND (Id + 2, Num) IN (
+#             SELECT * 
+#             FROM Logs
+#             )
+
+# Solution 2
+# SELECT DISTINCT num AS ConsecutiveNums
+# FROM (
+#     SELECT 
+#         id,
+#         LAG(num) OVER (ORDER BY id) AS PrevNum,
+#         num,
+#         LEAD(num) OVER (ORDER BY id) AS NextNum
+#     FROM Logs) l
+# WHERE num = PrevNum AND num = NextNum
+
+# Solution 3
+# Write your MySQL query statement below
+WITH cte as (
+    SELECT num,
+    lead(num,1) over() num1,
+    lead(num,2) over() num2
+    from logs
+
+)
+SELECT DISTINCT num ConsecutiveNums 
+FROM cte 
+WHERE (num=num1) AND (num=num2)
